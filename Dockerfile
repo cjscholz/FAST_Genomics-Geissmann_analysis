@@ -3,14 +3,17 @@
 # of single-cell RNA-seq data in FAST Genomics format
 ############################################################ 
 
+# base image of Bioconductor
+FROM bioconductor/release_core2
+
 # File Author / Maintainer 
 MAINTAINER Claus J. Scholz <cscholz@uni-bonn.de>
 
-
-FROM bioconductor/release_core2
+# start the installation
 ADD ./install_scripts /opt/install_scripts
 RUN Rscript /opt/install_scripts/install_Seurat.R
 RUN apt-get -y install default-jre
 
+# run the command to start the Seurat pipeline
 ADD ./scripts /opt/scripts
 CMD ["Rscript", "--default-packages=base,utils,grDevices,graphics,stats,methods", "/opt/scripts/raw2cluster.R"]
