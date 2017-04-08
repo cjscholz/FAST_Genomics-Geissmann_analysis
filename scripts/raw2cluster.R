@@ -57,10 +57,12 @@ writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv", gene
 ## Data Input
 #################################################
 
-setwd("/data/")
-# setwd("D:/Projects/FASTgenomics/Docker_containers/Seurat/raw2cluster/data")
+setwd("/config/")
 
 seuratParams <- readConfig()
+
+
+setwd("/data/")
 
 countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME, geneFile = seuratParams$GENEMETA_INPUT_NAME)
 
@@ -69,9 +71,11 @@ countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME, geneFile =
 ## Data Analysis
 #################################################
 
+setwd("/output/")
+PROJECT_NAME
 seuratCounts <- new("seurat", raw.data = countMatrix)
 seuratCounts <- Setup(object = seuratCounts, 
-                      project = "Mass et al., Science (2016)", 
+                      project = seuratParams$PROJECT_NAME, 
                       min.cells = as.numeric(seuratParams$MIN_CELLS), 
                       min.genes = as.numeric(seuratParams$MIN_GENES), 
                       is.expr = as.numeric(seuratParams$MIN_EXPRS),
@@ -148,7 +152,7 @@ clusterTab <- data.frame(cell = sub("cellID.", "", names(seuratCounts@ident)),
                          cluster = seuratCounts@ident)
 
 write.table(clusterTab, 
-            paste(seuratParams$PROJECT_NAME, "Cluster Assignments.txt"),
+            paste(seuratParams$PROJECT_NAME, "Cluster Assignments.tsv"),
             row.names = FALSE,
             col.names = TRUE,
             quote = FALSE,
