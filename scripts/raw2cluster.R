@@ -72,7 +72,6 @@ countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME, geneFile =
 #################################################
 
 setwd("/output/")
-PROJECT_NAME
 seuratCounts <- new("seurat", raw.data = countMatrix)
 seuratCounts <- Setup(object = seuratCounts, 
                       project = seuratParams$PROJECT_NAME, 
@@ -148,15 +147,18 @@ png(paste(seuratParams$PROJECT_NAME, "tSNE.png"), width = 1500, height = 1200, r
 TSNEPlot(seuratCounts)
 dev.off()
 
-clusterTab <- data.frame(cell = sub("cellID.", "", names(seuratCounts@ident)),
-                         cluster = seuratCounts@ident)
+clusterTab <- data.frame(cell_id = sub("cellID.", "", names(seuratCounts@ident)),
+                         cluster = seuratCounts@ident,
+                         cluster_p = "1.0",
+                         x = seuratCounts@tsne.rot$tSNE_1,
+                         y = seuratCounts@tsne.rot$tSNE_2)
 
 write.table(clusterTab, 
-            paste(seuratParams$PROJECT_NAME, "Cluster Assignments.tsv"),
+            file = paste(seuratParams$PROJECT_NAME, "Cluster Assignments.csv"),
             row.names = FALSE,
             col.names = TRUE,
             quote = FALSE,
-            sep = "\t")
+            sep = ",")
 
 q("no")
 
