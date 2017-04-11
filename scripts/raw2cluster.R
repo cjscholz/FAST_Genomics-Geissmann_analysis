@@ -57,7 +57,7 @@ writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv", gene
 ## Data Input
 #################################################
 
-setwd("/config/")
+setwd("/opt/config/")
 
 seuratParams <- readConfig()
 
@@ -71,7 +71,6 @@ countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME, geneFile =
 ## Data Analysis
 #################################################
 
-setwd("/output/")
 seuratCounts <- new("seurat", raw.data = countMatrix)
 seuratCounts <- Setup(object = seuratCounts, 
                       project = seuratParams$PROJECT_NAME, 
