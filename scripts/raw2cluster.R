@@ -19,10 +19,10 @@ readConfig <- function(file = "seurat_config.txt") {
   return(seuratParams)
 }
 
-readFG <- function(countFile = "expression_data.tsv", geneFile = "gene_metadata.tsv") {
+readFG <- function(countFile = "expression_data.tsv") {
   require(Matrix)
   countData <- read.table(countFile, header = TRUE)
-  geneData <- scan(geneFile, "character")[-1]
+  geneData <- unique(countData[, 2])
   countData$index <- match(countData[, 2], geneData)
   cellIDs <- sort(unique(countData[, 1]))
   exprsMatrix <- Matrix(matrix(data = 0, 
@@ -37,7 +37,7 @@ readFG <- function(countFile = "expression_data.tsv", geneFile = "gene_metadata.
   return(exprsMatrix)
 }
 
-writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv", geneFile = "vargene_metadata.tsv") {
+writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv") {
   expression_data <- data.frame(gene = rownames(countMatrix),
                                 as.matrix(countMatrix),
                                 stringsAsFactors = F,
@@ -49,7 +49,6 @@ writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv", gene
   expression_data <- gsub(" ", "", expression_data)
   expression_data[, 1] <- sub("cellID.", "", expression_data[, 1])
   write.table(expression_data, countFile, row.names = F, col.names = T, quote = F, sep = "\t")
-  write(c("entrezId*Ganzzahl", unique(expression_data[,2])), geneFile)
 }
 
 
@@ -64,7 +63,7 @@ seuratParams <- readConfig()
 
 setwd("/data/")
 
-countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME, geneFile = seuratParams$GENEMETA_INPUT_NAME)
+countMatrix <- readFG(countFile = seuratParams$EXPRESSION_INPUT_NAME)
 
 
 #################################################
@@ -116,8 +115,7 @@ seuratCounts <- MeanVarPlot(object = seuratCounts,
 dev.off()
 
 writeFG(seuratCounts@raw.data[seuratCounts@var.genes, seuratCounts@cell.names],
-        countFile = paste(seuratParams$PROJECT_NAME, "variable Gene Expression Data.tsv"), 
-        geneFile = paste(seuratParams$PROJECT_NAME, "variable Gene Metadata.tsv"))
+        countFile = paste(seuratParams$PROJECT_NAME, "variable Gene Expression Data.tsv"))
 
 seuratCounts <- PCA(seuratCounts, 
                     pc.genes = seuratCounts@var.genes, 

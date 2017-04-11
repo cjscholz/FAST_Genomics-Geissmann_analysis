@@ -1,5 +1,4 @@
-EXPRESSION_INPUT_NAME=expression_data.tsv
-GENEMETA_INPUT_NAME=gene_metadata.tsv
+EXPRESSION_INPUT_NAME=expressions_entrez.tsv
 PROJECT_NAME=Mass et al., Science (2016)
 MIN_CELLS=1
 MIN_GENES=150
