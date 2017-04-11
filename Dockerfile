@@ -16,4 +16,5 @@ RUN apt-get -y install default-jre
 
 # run the command to start the Seurat pipeline
 ADD ./scripts /opt/scripts
+ADD ./config /opt/config
 CMD ["Rscript", "--default-packages=base,utils,grDevices,graphics,stats,methods", "/opt/scripts/raw2cluster.R"]
