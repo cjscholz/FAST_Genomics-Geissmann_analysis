@@ -151,7 +151,7 @@ clusterTab <- data.frame(cell_id = sub("cellID.", "", names(seuratCounts@ident))
                          y = seuratCounts@tsne.rot$tSNE_2)
 
 write.table(clusterTab, 
-            file = paste(seuratParams$PROJECT_NAME, "Cluster Assignments.csv"),
+            file = "clustering_results.csv",
             row.names = FALSE,
             col.names = TRUE,
             quote = FALSE,
