@@ -35,4 +35,5 @@ vignettes/*.pdf
 # data files used in or produced by the pipeline
 *.tsv
 *.csv
+/data/*yml
 *.png

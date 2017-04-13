@@ -4,20 +4,9 @@
 #################################################
 
 library(Matrix)
+library(yaml)
 library(reshape2)
 library(Seurat)
-
-readConfig <- function(file = "seurat_config.txt") {
-  rawConfig <- scan(file, what = "character", sep = "\n")
-  tmp <- strsplit(rawConfig, split = "=")
-  seuratParams <- list()
-  x <- sapply(tmp, function(x) x[1])
-  y <- sapply(tmp, function(x) x[2])
-  for (i in 1:length(tmp)) {
-    seuratParams[[x[i]]] <- y[i]
-  }
-  return(seuratParams)
-}
 
 readFG <- function(countFile = "expression_data.tsv") {
   require(Matrix)
@@ -58,7 +47,7 @@ writeFG <- function(countMatrix, countFile = "vargene_expression_data.tsv") {
 
 setwd("/opt/config/")
 
-seuratParams <- readConfig()
+seuratParams <- yaml.load_file("seurat_config.yml")
 
 
 setwd("/data/")
@@ -88,11 +77,10 @@ seuratCounts <- Setup(object = seuratCounts,
 seuratCounts <- AddMetaData(seuratCounts, colSums(seuratCounts@data), "nGene")
 seuratCounts <- RegressOut(seuratCounts, latent.vars = "nGene")
 
-png(paste(seuratParams$PROJECT_NAME, "Mean Variance Plot.png"), width = 2000, height = 1200, res = 140)
 seuratCounts <- MeanVarPlot(object = seuratCounts, 
                             fxn.x = expMean, 
                             fxn.y = logVarDivMean,
-                            do.plot = TRUE, 
+                            do.plot = FALSE, 
                             set.var.genes = TRUE, 
                             do.text = TRUE,
                             x.low.cutoff = as.numeric(seuratParams$X_LOW_CUTOFF), 
@@ -112,7 +100,6 @@ seuratCounts <- MeanVarPlot(object = seuratCounts,
                             contour.lty = 2, 
                             num.bin = 20,
                             do.recalc = TRUE)
-dev.off()
 
 writeFG(seuratCounts@raw.data[seuratCounts@var.genes, seuratCounts@cell.names],
         countFile = paste(seuratParams$PROJECT_NAME, "variable Gene Expression Data.tsv"))
@@ -134,16 +121,6 @@ seuratCounts <- RunTSNE(seuratCounts,
                         dims.use = 1:as.numeric(seuratParams$PCA_DIMS_FOR_TSNE), 
                         do.fast = T)
 
-png(paste(seuratParams$PROJECT_NAME, "Principal Component Analysis.png"), width = 1500, height = 1200, res = 140)
-PCAPlot(seuratCounts, 
-        dim.1 = 1, 
-        dim.2 = 2)
-dev.off()
-
-png(paste(seuratParams$PROJECT_NAME, "tSNE.png"), width = 1500, height = 1200, res = 140)
-TSNEPlot(seuratCounts)
-dev.off()
-
 clusterTab <- data.frame(cell_id = sub("cellID.", "", names(seuratCounts@ident)),
                          cluster = seuratCounts@ident,
                          cluster_p = "1.0",
@@ -156,6 +133,20 @@ write.table(clusterTab,
             col.names = TRUE,
             quote = FALSE,
             sep = ",")
+
+clusteringYML <- list()
+tmpMatrix <- paste("#Matrix preparation\n* minimum log gene expression value: ", as.numeric(seuratParams$MIN_EXPRS),
+                   "\n* minimum number of genes per cell: ", as.numeric(seuratParams$MIN_GENES),
+                   "\n* minimum number of cell with expressed gene: ", as.numeric(seuratParams$MIN_CELLS), sep = "")
+tmpGenes <- paste("#Variable Gene Selection\nGenes were selected by their mean/dispersion relationship based on log expression values.", 
+                  "\n* minimum average log expression: ", as.numeric(seuratParams$X_LOW_CUTOFF),
+                  "\n* maximim average log expression: ", as.numeric(seuratParams$X_HIGH_CUTOFF),
+                  "\n* minimum dispersion: ", as.numeric(seuratParams$Y_LOW_CUTOFF),
+                  "\n* maximum dispersion: ", as.numeric(seuratParams$Y_HIGH_CUTOFF), sep="")
+tmpDimRed <- paste("#Dimensionality Reduction\nDimensionality reduction was achieved by PCA, followed by tSNE for clustering. Here",
+                   as.numeric(seuratParams$PCA_DIMS_FOR_TSNE), "principal components were used.")
+clusteringYML$description <- paste(tmpMatrix, tmpGenes, tmpDimRed, sep="\n")
+write(as.yaml(clusteringYML), "clustering.yml")
 
 q("no")
 
